@@ -12,18 +12,18 @@ class FlutterAudioRecorder {
   static const String DEFAULT_EXTENSION = '.m4a';
   static LocalFileSystem fs = LocalFileSystem();
 
-  String _path;
-  String _extension;
-  Recording _recording;
-  int _sampleRate;
+  String? _path;
+  String? _extension;
+  Recording? _recording;
+  int? _sampleRate;
 
-  Future _initRecorder;
-  Future get initialized => _initRecorder;
-  Recording get recording => _recording;
+  Future? _initRecorder;
+  Future get initialized => _initRecorder!;
+  Recording get recording => _recording!;
 
   FlutterAudioRecorder(String path,
-      {AudioFormat audioFormat, int sampleRate = 16000}) {
-    _initRecorder = _init(path, audioFormat, sampleRate);
+      {AudioFormat? audioFormat, int sampleRate = 16000}) {
+    _initRecorder = _init(path, audioFormat!, sampleRate);
   }
 
   /// Initialized recorder instance
@@ -66,7 +66,7 @@ class FlutterAudioRecorder {
     _extension = extension;
     _sampleRate = sampleRate;
 
-    Map<String, Object> response;
+    Map<String, dynamic>? response;
     var result = await _channel.invokeMethod('init',
         {"path": _path, "extension": _extension, "sampleRate": _sampleRate});
 
@@ -75,7 +75,7 @@ class FlutterAudioRecorder {
     }
 
     _recording = new Recording()
-      ..status = _stringToRecordingStatus(response['status'])
+      ..status = _stringToRecordingStatus(response!['status'])
       ..metering = new AudioMetering(
           averagePower: -120, peakPower: -120, isMeteringEnabled: true);
 
@@ -103,7 +103,7 @@ class FlutterAudioRecorder {
   /// Request the recording to stop
   /// Once its stopped, the recording file will be finalized
   /// and will not be start, resume, pause anymore.
-  Future<Recording> stop() async {
+  Future<Recording?> stop() async {
     Map<String, Object> response;
     var result = await _channel.invokeMethod('stop');
 
@@ -118,7 +118,7 @@ class FlutterAudioRecorder {
   /// Ask for current status of recording
   /// Returns the result of current recording status
   /// Metering level, Duration, Status...
-  Future<Recording> current({int channel = 0}) async {
+  Future<Recording?> current({int channel = 0}) async {
     Map<String, Object> response;
 
     var result = await _channel.invokeMethod('current', {"channel": channel});
@@ -140,18 +140,18 @@ class FlutterAudioRecorder {
   }
 
   ///  util - response msg to recording object.
-  void _responseToRecording(Map<String, Object> response) {
+  void _responseToRecording(Map<String, dynamic> response) {
     if (response == null) return;
 
-    _recording.duration = new Duration(milliseconds: response['duration']);
-    _recording.path = response['path'];
-    _recording.audioFormat = _stringToAudioFormat(response['audioFormat']);
-    _recording.extension = response['audioFormat'];
-    _recording.metering = new AudioMetering(
+    _recording?.duration = new Duration(milliseconds: response['duration']);
+    _recording?.path = response['path'];
+    _recording?.audioFormat = _stringToAudioFormat(response['audioFormat']);
+    _recording?.extension = response['audioFormat'];
+    _recording?.metering = new AudioMetering(
         peakPower: response['peakPower'],
         averagePower: response['averagePower'],
         isMeteringEnabled: response['isMeteringEnabled']);
-    _recording.status = _stringToRecordingStatus(response['status']);
+    _recording?.status = _stringToRecordingStatus(response['status']);
   }
 
   /// util - verify if extension string is supported
@@ -168,7 +168,7 @@ class FlutterAudioRecorder {
   }
 
   /// util - Convert String to Enum
-  static AudioFormat _stringToAudioFormat(String extension) {
+  static AudioFormat? _stringToAudioFormat(String extension) {
     switch (extension) {
       case ".wav":
         return AudioFormat.WAV;
@@ -215,34 +215,34 @@ class FlutterAudioRecorder {
 /// Recording Object - represent a recording file
 class Recording {
   /// File path
-  String path;
+  String? path;
 
   /// Extension
-  String extension;
+  String? extension;
 
   /// Duration in milliseconds
-  Duration duration;
+  Duration? duration;
 
   /// Audio format
-  AudioFormat audioFormat;
+  AudioFormat? audioFormat;
 
   /// Metering
-  AudioMetering metering;
+  AudioMetering? metering;
 
   /// Is currently recording
-  RecordingStatus status;
+  RecordingStatus? status;
 }
 
 /// Audio Metering Level - describe the metering level of microphone when recording
 class AudioMetering {
   /// Represent peak level of given short duration
-  double peakPower;
+  double? peakPower;
 
   /// Represent average level of given short duration
-  double averagePower;
+  double? averagePower;
 
   /// Is metering enabled in system
-  bool isMeteringEnabled;
+  bool? isMeteringEnabled;
 
   AudioMetering({this.peakPower, this.averagePower, this.isMeteringEnabled});
 }
